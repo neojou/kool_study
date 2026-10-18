@@ -14,11 +14,11 @@ ROOT = Path(os.environ["CONFIGURE_ROOT"]).resolve()
 SKIP_DIRS = {".git", ".gradle", ".idea", ".kotlin", "build", "kotlin-js-store"}
 TEXT_SUFFIXES = {".kt", ".kts", ".html", ".md", ".properties", ".xml", ".json", ".toml"}
 SOURCE_ROOTS = (
-    "composeApp/src/commonMain/kotlin",
-    "composeApp/src/desktopMain/kotlin",
-    "composeApp/src/wasmJsMain/kotlin",
+    "koolApp/src/commonMain/kotlin",
+    "koolApp/src/desktopMain/kotlin",
+    "koolApp/src/jsMain/kotlin",
 )
-INDEX_HTML = Path("composeApp/src/wasmJsMain/resources/index.html")
+INDEX_HTML = Path("koolApp/src/jsMain/resources/index.html")
 PROPS_FILE = Path("gradle.properties")
 MARKER = "configure:app.displayName"
 MARKER_RE = re.compile(
@@ -107,7 +107,8 @@ def help_text(values=None):
 
   proj_name <名稱>
       把專案顯示名稱改成 <名稱>。
-      視窗標題、網頁標題、主畫面、About、macOS 選單與 Dock 都讀這個名稱。
+      視窗標題、網頁標題與 About 都讀這個名稱。
+      macOS 系統選單名稱不保證會跟著變。
       名稱可含空白；不加引號的多個參數會用空白接起來。
 
       若名稱含英文或數字，會一併更新：
@@ -122,7 +123,7 @@ def help_text(values=None):
       把產品版號改成 <版號>。About 的第二行、Gradle 版本與
       打包版號都讀這個值。
       格式是 MAJOR、MAJOR.MINOR 或 MAJOR.MINOR.PATCH，例如 0.2 或 0.2.0。
-      不含 v 前綴。不會改 Kotlin、Compose 或函式庫的版號。
+      不含 v 前綴。不會改 Kotlin、kool 或函式庫的版號。
 
 目前專案：
   顯示名稱  {display}
