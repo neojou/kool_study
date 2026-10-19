@@ -12,10 +12,11 @@ from pathlib import Path
 ROOT = Path(os.environ["CONFIGURE_ROOT"]).resolve()
 
 SKIP_DIRS = {".git", ".gradle", ".idea", ".kotlin", "build", "kotlin-js-store"}
-TEXT_SUFFIXES = {".kt", ".kts", ".html", ".md", ".properties", ".xml", ".json", ".toml"}
+TEXT_SUFFIXES = {".kt", ".kts", ".java", ".html", ".md", ".properties", ".xml", ".json", ".toml"}
 SOURCE_ROOTS = (
     "koolApp/src/commonMain/kotlin",
     "koolApp/src/desktopMain/kotlin",
+    "koolApp/src/desktopMain/java",
     "koolApp/src/jsMain/kotlin",
 )
 INDEX_HTML = Path("koolApp/src/jsMain/resources/index.html")
@@ -107,8 +108,7 @@ def help_text(values=None):
 
   proj_name <名稱>
       把專案顯示名稱改成 <名稱>。
-      視窗標題、網頁標題與 About 都讀這個名稱。
-      macOS 系統選單名稱不保證會跟著變。
+      視窗標題、網頁標題、About，以及 macOS 系統選單，都讀這個名稱。
       名稱可含空白；不加引號的多個參數會用空白接起來。
 
       若名稱含英文或數字，會一併更新：
@@ -120,8 +120,8 @@ def help_text(values=None):
       名稱不可包含 " \\ $ # = 或換行。
 
   version <版號>
-      把產品版號改成 <版號>。About 的第二行、Gradle 版本與
-      打包版號都讀這個值。
+      把產品版號改成 <版號>。app 內 About、視窗與分頁標題、
+      macOS 系統 About，以及 Gradle 的 jar / zip 檔名都讀這個值。
       格式是 MAJOR、MAJOR.MINOR 或 MAJOR.MINOR.PATCH，例如 0.2 或 0.2.0。
       不含 v 前綴。不會改 Kotlin、kool 或函式庫的版號。
 
@@ -305,6 +305,14 @@ def apply_title(text, name):
     return text[: match.start()] + f"<title>{escaped}</title>" + text[match.end():]
 
 
+def replace_display(text, old_display, new_display):
+    """Replace the display name only when it is not part of a longer identifier."""
+    pattern = re.compile(
+        r"(?<![A-Za-z0-9_])" + re.escape(old_display) + r"(?![A-Za-z0-9_])"
+    )
+    return pattern.sub(lambda _match: new_display, text)
+
+
 def replace_group(text, old_group, new_group):
     dotted = re.compile(re.escape(old_group) + r"(?![A-Za-z0-9_])")
     old_path = old_group.replace(".", "/")
@@ -412,7 +420,7 @@ def cmd_proj_name(args):
             if path.suffix != ".md":
                 continue
             text = path.read_text(encoding="utf-8")
-            updated = text.replace(old_display, name)
+            updated = replace_display(text, old_display, name)
             if updated != text:
                 path.write_text(updated, encoding="utf-8")
                 remember(changed, path)

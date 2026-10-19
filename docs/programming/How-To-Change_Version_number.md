@@ -21,7 +21,7 @@ const val NAME: String = "0.2.0" // configure:app.version
 
 ## 哪些地方讀這個版號
 
-- About 第二行。`AppUi.kt` 顯示 `Version ` 加上 `AppVersion.NAME`，例如 `Version 0.2.0`。這是 app 內的面板。macOS 系統選單的 About 是系統標準面板，不會顯示這個版號。
+- About 第二行。`AppUi.kt` 顯示 `Version ` 加上 `AppVersion.NAME`，例如 `Version 0.2.0`。這是 app 內的面板。macOS 系統選單的 About 是系統標準面板，版號同樣是 `AppVersion.NAME`，不再顯示 JDK 版號。
 - 視窗與分頁標題。`appTitle` 是 `APP_NAME` 後面空一格再接 `NAME`，例如 `kool_study 0.2.0`。
 - Gradle 專案版本。`koolApp/build.gradle.kts` 的 `version` 讀 `app.version`。jar 與 `desktopDistZip` 的檔名會帶這個版號。
 

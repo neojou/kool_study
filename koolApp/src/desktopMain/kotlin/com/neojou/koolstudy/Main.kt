@@ -14,5 +14,6 @@ fun main() = KoolApplication(
         windowSize = Vec2i(1280, 800),
     )
 ) {
+    applyMacOsApplicationName(AppVersion.APP_NAME, AppVersion.NAME)
     koolStudyApp()
 }

@@ -275,7 +275,7 @@ UI 的重點（已驗證）：
 | Top menu「About」→ `AboutDialog`（名稱 / `Version x`） | 左上角 kool ui2 按鈕「About」→ 置中面板（名稱 / `Version x` / OK） | 已驗證 |
 | 視窗標題 `APP_NAME` | `KoolConfigJvm(windowTitle = "APP_NAME NAME")`，例如 `kool_study 0.1.0` | 已驗證（程式寫入；GLFW 標題列在 Mac 上未看到） |
 | 網頁標題 | `index.html` 的 `<title>`（configure.sh 管）＋ `JsMain` 設 `document.title = appTitle` | 已驗證可編譯 |
-| macOS 系統選單 About → 同一個對話框 | **做不到**：kool 在 macOS 把 AWT 設成 headless，`Desktop.setAboutHandler` 無效。系統選單由 GLFW 建立 | 推測。可接受的取捨：以 app 內的 About 為準，並在文件說明 |
+| macOS 系統選單 About → 同一個對話框 | **做不到**：kool 在 macOS 把 AWT 設成 headless，`Desktop.setAboutHandler` 無效。系統選單由 GLFW 建立。選單名稱與標準 About 面板的版號後來由 `MacOsApplicationName` 改成 `APP_NAME` / `AppVersion.NAME` | 見 desktop 的 `MacOsApplicationName.kt` |
 | 中央顯示 APP_NAME | 改成旋轉立方體（需求本身） | — |
 
 ## 7. 版號建議
@@ -295,7 +295,7 @@ UI 的重點（已驗證）：
 
 - **macOS 沒有實機驗證**。`-XstartOnFirstThread`、GLFW Cocoa、MoltenVK（Vulkan）都屬推測。若 Vulkan 失敗後退回 OpenGL 時當掉（kool 0.19.0 的 multi-window bug），在 `KoolConfigJvm` 加 `renderBackend = RenderBackendGl`。
 - **Linux X11 不能跑**：kool 0.19.0 的 GLFW 強制用 Wayland。純 X11 會出現 `Unable to initialize GLFW`；main 分支已修。Neo 用 Mac 不受影響。
-- **macOS 系統選單**可能顯示 `java`，系統 About 是 macOS 標準面板，不是 app 的 About。
+- **macOS 系統選單**原本會顯示 `java`，About 面板原本顯示 JDK 版號。desktop 的 `MacOsApplicationName` 在啟動後把選單名稱改成 `APP_NAME`，標準 About 的版號改成 `AppVersion.NAME`。它仍不是 app 內的 About 面板。
 - **打包**：Compose 的 `nativeDistributions`（dmg）沒有了，只剩 `desktopDistZip`。要 dmg 屬於後續工作（jpackage）。
 - **JS 文字**：在 SwiftShader（軟體 WebGL）上，kool UI 的文字畫成色塊，立方體正常。推測是軟體渲染的問題，真 GPU 瀏覽器應該正常，要在 Mac 的 Chrome 或 Safari 確認。
 - **中文**：kool UI 預設字型沒有 CJK 字形。

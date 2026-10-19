@@ -165,7 +165,7 @@ kotlin {
 2. **kool 在 macOS 會把 AWT 設成 headless**（已從原始碼確認：`GlfwWindowSubsystem.onEarlyInit` 會設 `java.awt.headless=true`）。結果：
    - 原本 `Main.kt` 用的 `java.awt.Desktop.setAboutHandler` 不能用。headless 下 `Desktop.isDesktopSupported()` 回傳 false，所以要刪掉。
    - About 改由 kool UI 自己畫，見 migration plan。
-3. **系統選單名稱**（推測）。視窗由 GLFW（Cocoa）建立，不是 AWT。GLFW 會自己建 macOS 選單列；沒有包成 `.app` 時，選單名稱可能顯示 `java`。系統選單的「About」可能打開 macOS 標準面板，顯示 java 或空版號。`-Xdock:name` 與 `-Dapple.awt.application.name` 是給 AWT 用的，對 GLFW 可能無效。保留它們沒有壞處，請在 Mac 上實際確認。
+3. **系統選單名稱**。視窗由 GLFW（Cocoa）建立，不是 AWT。GLFW 在 `glfwInit()` 的 `createMenuBar` 依序讀 `CFBundleDisplayName`、`CFBundleName`、`CFBundleExecutable`，都沒有才用執行檔名稱。`runDesktop` 跑的是 `java`，所以選單原本是 `java`，項目是 `About java`。`-Xdock:name` 與 `-Dapple.awt.application.name` 只影響 AWT / Dock，改不到這個選單；kool 還會把 AWT 設成 headless。desktop 的 `MacOsApplicationName.kt` 在啟動後把選單標題與 `About` / `Hide` / `Quit` 改成 `AppVersion.APP_NAME`，並設定 `NSProcessInfo` 的行程名稱。系統 About 仍是 macOS 標準面板；點下去時改走 `orderFrontStandardAboutPanelWithOptions:`，名稱是 `APP_NAME`，版號是 `AppVersion.NAME`，不再顯示 JDK 版號。
 4. **渲染後端**。kool 0.19.0 desktop 預設用 Vulkan（macOS 走 MoltenVK），失敗時退回 OpenGL（`useOpenGlFallback = true`）。測試機看到一個 kool bug：Vulkan 在**視窗建立後**才失敗時，退回 OpenGL 會丟 `Multi-window operation is still not implemented` 而當掉。如果 Mac 上遇到，可以在 `KoolConfigJvm` 加 `renderBackend = RenderBackendGl`（`import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl`）強制用 OpenGL。macOS 的 OpenGL 最高 4.1，kool 會關掉需要 4.3 以上的功能（推測仍能畫 Hello World）。
 5. JDK 25 會印 `sun.misc.Unsafe` deprecated 警告，來源是 LWJGL 3.3.6，可以忽略（已驗證只是警告）。
 
