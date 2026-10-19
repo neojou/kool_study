@@ -139,6 +139,7 @@ JS 版先試 WebGPU，沒有可用的 adapter 時會自動退回 WebGL2（已驗
 - `tabindex="0"` 讓 canvas 可以取得焦點、收到鍵盤事件（照抄官方模板）。
 - CSS 讓 canvas 填滿視窗：`canvas { width: 100vw; height: 100vh; display: block; }`。
 - script 檔名要和 `commonWebpackConfig.outputFileName` 一樣（trial 固定為 `koolApp.js`）。
+- UI 文字用的 Fira Sans MSDF 圖集不在 JS klib 裡。瀏覽器要能抓到 `./assets/fonts/fira-sans-regular.png`（由 `koolApp/build.gradle.kts` 從 `kool-core-desktop` jar 抽出）。只有 `index.html` 與 `koolApp.js` 時，About 與版號會變成糊掉的色塊。
 
 ## 4. 不支援的 target
 

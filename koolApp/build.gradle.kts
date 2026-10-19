@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -57,4 +58,31 @@ kotlin {
             implementation(libs.kool.core)
         }
     }
+}
+
+// The MSDF atlas lives in kool-core-desktop.jar. The JS klib does not ship it, and the
+// browser loader requests ./assets/fonts/fira-sans-regular.png. Without that file every
+// glyph is a solid quad.
+val koolJsFonts by configurations.creating {
+    isCanBeResolved = true
+    isCanBeConsumed = false
+    isTransitive = false
+}
+
+dependencies {
+    koolJsFonts("de.fabmax.kool:kool-core-desktop:${libs.versions.kool.get()}")
+}
+
+val extractKoolJsFonts = tasks.register<Copy>("extractKoolJsFonts") {
+    val fontJar = koolJsFonts.elements.map { files -> files.single().asFile }
+    from(fontJar.map { zipTree(it) }) {
+        include("fonts/fira-sans-regular.png", "fonts/fira-sans-license.txt")
+        eachFile { path = "assets/$path" }
+    }
+    into(layout.buildDirectory.dir("kool-js-fonts"))
+    includeEmptyDirs = false
+}
+
+tasks.named<ProcessResources>("jsProcessResources") {
+    from(extractKoolJsFonts)
 }

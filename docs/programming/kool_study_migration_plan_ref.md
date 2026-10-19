@@ -287,7 +287,7 @@ UI 的重點（已驗證）：
 1. `./gradlew :koolApp:compileKotlinDesktop :koolApp:compileKotlinJs` 成功（測試機已驗證）。
 2. macOS：`./gradlew :koolApp:runDesktop` 開出 kool 視窗，標題是 `kool_study 0.2.0`，看到彩色立方體繞 X 軸自轉（約每 8 秒一圈）。滑鼠左鍵拖曳可以繞著看，滾輪可以縮放（推測，要在 Mac 上確認）。
 3. 左上角「About」打開兩行面板 `kool_study` / `Version 0.2.0`，OK 可以關閉（測試機已驗證）。
-4. `./gradlew :koolApp:jsBrowserDistribution` 成功，`koolApp/build/dist/js/productionExecutable/` 有 `index.html` 與 `koolApp.js`。用任意靜態伺服器開啟（例如 `python3 -m http.server`），可以看到旋轉的立方體（測試機已驗證；Chrome SwiftShader WebGL2）。
+4. `./gradlew :koolApp:jsBrowserDistribution` 成功，`koolApp/build/dist/js/productionExecutable/` 有 `index.html`、`koolApp.js`，以及 `assets/fonts/fira-sans-regular.png`。用任意靜態伺服器開啟（例如 `python3 -m http.server`），可以看到旋轉的立方體（測試機已驗證；Chrome SwiftShader WebGL2）。UI 文字要等圖集有被送進這個目錄才清楚。
 5. `./configure.sh version 0.2.0` 與 `./configure.sh proj_name "<名稱>"` 仍然正常，改完後仍可編譯（測試機已驗證）。
 6. repo 裡不再有 Compose 相依（`rg -n "compose" --glob '*.kts' --glob '*.toml'` 沒有結果）。
 
@@ -297,6 +297,6 @@ UI 的重點（已驗證）：
 - **Linux X11 不能跑**：kool 0.19.0 的 GLFW 強制用 Wayland。純 X11 會出現 `Unable to initialize GLFW`；main 分支已修。Neo 用 Mac 不受影響。
 - **macOS 系統選單**原本會顯示 `java`，About 面板原本顯示 JDK 版號。desktop 的 `MacOsApplicationName` 在啟動後把選單名稱改成 `APP_NAME`，標準 About 的版號改成 `AppVersion.NAME`。它仍不是 app 內的 About 面板。
 - **打包**：Compose 的 `nativeDistributions`（dmg）沒有了，只剩 `desktopDistZip`。要 dmg 屬於後續工作（jpackage）。
-- **JS 文字**：在 SwiftShader（軟體 WebGL）上，kool UI 的文字畫成色塊，立方體正常。推測是軟體渲染的問題，真 GPU 瀏覽器應該正常，要在 Mac 的 Chrome 或 Safari 確認。
+- **JS 文字**：預設 MSDF 圖集 `fonts/fira-sans-regular.png` 只在 `kool-core-desktop` jar。JS 會抓 `./assets/fonts/fira-sans-regular.png`；檔案不在時 kool 改用全黑貼圖，每個字變成糊掉的色塊，立方體不受影響。`koolApp/build.gradle.kts` 的 `extractKoolJsFonts` 把 png 與授權從 desktop jar 抽到 `jsProcessResources` 的 `assets/fonts/`。這與 SwiftShader 或真 GPU 無關。
 - **中文**：kool UI 預設字型沒有 CJK 字形。
 - 不要升到 kool main（0.20.0-SNAPSHOT），API 與 repo 都不穩定。

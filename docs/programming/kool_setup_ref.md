@@ -81,6 +81,7 @@ include(":koolApp")
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -137,6 +138,33 @@ kotlin {
         }
     }
 }
+
+// The MSDF atlas lives in kool-core-desktop.jar. The JS klib does not ship it, and the
+// browser loader requests ./assets/fonts/fira-sans-regular.png. Without that file every
+// glyph is a solid quad.
+val koolJsFonts by configurations.creating {
+    isCanBeResolved = true
+    isCanBeConsumed = false
+    isTransitive = false
+}
+
+dependencies {
+    koolJsFonts("de.fabmax.kool:kool-core-desktop:${libs.versions.kool.get()}")
+}
+
+val extractKoolJsFonts = tasks.register<Copy>("extractKoolJsFonts") {
+    val fontJar = koolJsFonts.elements.map { files -> files.single().asFile }
+    from(fontJar.map { zipTree(it) }) {
+        include("fonts/fira-sans-regular.png", "fonts/fira-sans-license.txt")
+        eachFile { path = "assets/$path" }
+    }
+    into(layout.buildDirectory.dir("kool-js-fonts"))
+    includeEmptyDirs = false
+}
+
+tasks.named<ProcessResources>("jsProcessResources") {
+    from(extractKoolJsFonts)
+}
 ```
 
 重點：
@@ -145,6 +173,7 @@ kotlin {
 - 打包成 `.dmg` 的 `nativeDistributions` 是 Compose 插件提供的功能，拿掉 Compose 後就沒有了。目前只剩 zip/tar 發佈（`desktopDistZip`）。要 dmg 得另外處理（例如 jpackage），屬於後續工作。
 - `--add-opens` 與 `--enable-native-access` 照抄 kool-basic-template。少了 `--enable-native-access`，JDK 25 會對 LWJGL 印出警告。
 - JS 的 `mode = DEVELOPMENT` 照抄模板，bundle 約 4 MiB。正式發佈可以改成 `PRODUCTION`（推測可行，未驗證）。
+- 瀏覽器的 UI 字型圖集不在 `kool-core-js` klib 裡，只在 `kool-core-desktop` jar 的 `fonts/fira-sans-regular.png`。JS 會向 `./assets/fonts/fira-sans-regular.png` 要這張圖。`extractKoolJsFonts` 從 desktop jar 抽出 png 與 OFL 授權，`jsProcessResources` 放到 `assets/fonts/`，開發伺服器與 `jsBrowserDistribution` 才讀得到。少了這張圖，每個字都是一塊糊掉的色塊，立方體仍然正常。
 - 第一次 build JS 會產生 `kotlin-js-store/yarn.lock`。Kotlin 官方建議 commit 它；現有 `.gitignore` 只忽略 `kotlin-js-store/wasm/yarn.lock`。
 
 ## 4. 常用指令
